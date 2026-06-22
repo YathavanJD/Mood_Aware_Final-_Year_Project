@@ -1,0 +1,167 @@
+/* ================= ROOT THEME ================= */
+
+:root{
+    --bg-main:#050816;
+    --bg-card:rgba(255,255,255,0.06);
+    --border-soft:rgba(255,255,255,0.12);
+    --accent:#4fd1ff;
+    --accent-soft:rgba(79,209,255,.25);
+}
+
+/* ================= BODY ================= */
+
+body{
+    font-family:'Inter','Segoe UI',sans-serif;
+    background:
+        radial-gradient(circle at 20% 20%, rgba(79,209,255,.08), transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(180,90,255,.08), transparent 40%),
+        var(--bg-main);
+
+    color:white;
+    min-height:100vh;
+}
+
+/* ================= GRID (SOFT) ================= */
+
+body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    background:
+        linear-gradient(rgba(255,255,255,.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.015) 1px, transparent 1px);
+    background-size:80px 80px;
+    pointer-events:none;
+}
+
+/* ================= NAVBAR ================= */
+
+.navbar{
+    backdrop-filter: blur(20px);
+    background: rgba(0,0,0,.35);
+    border-bottom:1px solid var(--border-soft);
+}
+
+/* ================= MAIN CARD ================= */
+
+.card-premium{
+    background:var(--bg-card);
+    backdrop-filter: blur(35px);
+    border-radius:24px;
+    border:1px solid var(--border-soft);
+
+    box-shadow:
+        0 40px 120px rgba(0,0,0,.8),
+        inset 0 0 20px rgba(255,255,255,.03);
+
+    padding:40px;
+    transition:.4s ease;
+}
+
+.card-premium:hover{
+    transform: translateY(-6px);
+}
+
+/* ================= TITLE ================= */
+
+.title-gradient{
+    font-weight:700;
+    font-size:42px;
+    background: linear-gradient(90deg,#4fd1ff,#a855f7);
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+/* ================= INPUT ================= */
+
+.premium-input{
+    width:100%;
+    padding:18px 22px;
+    border-radius:16px;
+    border:1px solid var(--border-soft);
+    background:rgba(255,255,255,.04);
+    color:white;
+    font-size:16px;
+    outline:none;
+    transition:.3s;
+}
+
+.premium-input:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 4px var(--accent-soft);
+}
+
+/* ================= BUTTON ================= */
+
+.btn-premium{
+    background:linear-gradient(135deg,#4fd1ff,#6366f1);
+    border:none;
+    padding:14px 30px;
+    border-radius:14px;
+    font-weight:600;
+    color:white;
+
+    box-shadow:
+        0 10px 30px rgba(79,209,255,.35);
+
+    transition:.3s;
+}
+
+.btn-premium:hover{
+    transform: translateY(-2px);
+    box-shadow:0 16px 40px rgba(79,209,255,.45);
+}
+
+.profile-wrapper{
+    max-width:900px;
+    margin:auto;
+}
+
+.profile-title{
+    text-align:center;
+    font-weight:700;
+    margin-bottom:30px;
+    color:#ffffff;
+}
+
+.premium-card{
+    background:rgba(255,255,255,0.05);
+    backdrop-filter: blur(14px);
+    border-radius:18px;
+    padding:25px;
+    margin-bottom:25px;
+    border:1px solid rgba(255,255,255,0.1);
+    box-shadow:0 0 25px rgba(0,0,0,0.4);
+}
+
+.profile-avatar{
+    width:110px;
+    height:110px;
+    border-radius:50%;
+    border:3px solid #4facfe;
+    box-shadow:0 0 20px rgba(79,172,254,0.5);
+}
+
+.premium-input{
+    background:rgba(255,255,255,0.08) !important;
+    border:none !important;
+    color:white !important;
+}
+
+.premium-btn{
+    background:linear-gradient(45deg,#4facfe,#00f2fe);
+    border:none;
+    font-weight:600;
+}
+
+.premium-btn:hover{
+    transform:translateY(-2px);
+}
+
+.premium-table{
+    color:white;
+}
+
+.premium-table thead{
+    background:rgba(255,255,255,0.08);
+}

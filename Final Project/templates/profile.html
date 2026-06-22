@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="profile-container">
+
+  <!-- PAGE TITLE -->
+  <h3 class="profile-title mb-5">Your Profile</h3>
+
+  <!-- PROFILE CARD -->
+  <div class="card profile-card p-4 mb-5 mx-auto">
+    <div class="text-center mb-4">
+      <img src="{{ url_for('static', filename='uploads/' ~ user.profile_image) if user.profile_image else url_for('static', filename='default_user.png') }}" 
+           class="profile-img" alt="Profile Image">
+    </div>
+
+    <div class="profile-info text-center mb-4">
+      <h4 class="profile-username">{{ user.username }}</h4>
+      <p class="profile-email">{{ user.email }}</p>
+    </div>
+
+    <div class="text-center">
+      <a href="{{ url_for('edit_profile') }}" class="btn btn-edit-profile">Edit Profile</a>
+    </div>
+  </div>
+
+  <!-- MOOD HISTORY + CHART CARD -->
+  <div class="card mood-card p-4 mx-auto">
+    <h4 class="mood-title text-center mb-4">Last 10 Mood Entries</h4>
+
+    <!-- TABLE -->
+    <div class="table-responsive">
+      <table class="mood-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Mood</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in moods[:10] %}
+          <tr class="{{ m.mood }}-mood-row">
+            <td>{{ m.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            <td class="mood-cell">{{ MOODS[m.mood].emoji }} {{ m.mood|capitalize }}</td>
+            <td>{{ m.source|capitalize }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- MOOD CHART -->
+    <div class="chart-container mt-5">
+      <canvas id="moodChart" height="200"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- STYLES -->
+<style>
+body {
+  background: #0b0c10;
+  font-family: 'Segoe UI', sans-serif;
+  color: #fff;
+}
+
+.profile-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 15px;
+}
+
+/* CARDS */
+.card {
+  background: #111;
+  border-radius: 25px;
+  padding: 30px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.7);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 50px rgba(96,165,250,0.5);
+}
+
+/* PAGE TITLE */
+.profile-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #60a5fa;
+  text-shadow: 0 0 10px rgba(59,130,246,0.8), 0 0 20px rgba(96,165,250,0.6);
+}
+
+/* PROFILE IMAGE */
+.profile-img {
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  border: 3px solid #60a5fa;
+  box-shadow: 0 0 20px rgba(96,165,250,0.6);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+.profile-img:hover { 
+  transform: scale(1.1);
+  box-shadow: 0 0 30px rgba(96,165,250,0.8);
+}
+
+/* PROFILE INFO */
+.profile-username { font-size: 1.7rem; font-weight: 700; color: #fff; margin-bottom: 5px;}
+.profile-email { font-size: 1.1rem; color: #cbd5e1; }
+
+/* EDIT PROFILE BUTTON */
+.btn-edit-profile {
+  display: inline-block;
+  padding: 12px 35px;
+  border-radius: 15px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  color: #fff;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease-in-out;
+  box-shadow: 0 0 15px rgba(59,130,246,0.5);
+}
+.btn-edit-profile:hover {
+  background: linear-gradient(135deg, #60a5fa, #3b82f6);
+  box-shadow: 0 0 25px rgba(96,165,250,0.7);
+  transform: scale(1.05);
+}
+
+/* MOOD CARD */
+.mood-card {
+  background: #111;
+  border-radius: 25px;
+  padding: 30px;
+  box-shadow: 0 0 30px rgba(0,0,0,0.6);
+}
+
+/* TABLE STYLING */
+.mood-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0 10px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.mood-table thead th {
+  background: linear-gradient(90deg, #3b82f6, #60a5fa);
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 12px 20px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.mood-table tbody td {
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+/* Alternating row gradients */
+.mood-table tbody tr:nth-child(odd) td { background: rgba(96,165,250,0.08); }
+.mood-table tbody tr:nth-child(even) td { background: rgba(96,165,250,0.04); }
+
+/* Hover effect */
+.mood-table tbody tr:hover td {
+  transform: translateX(5px);
+  box-shadow: 0 4px 15px rgba(96,165,250,0.3);
+}
+
+/* Mood colors */
+.mood-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 1.05rem;
+}
+
+.sadness-mood-row td { color:#00aaff; }
+.joy-mood-row td { color:#ffdd00; }
+.anger-mood-row td { color:#ff3300; }
+.fear-mood-row td { color:#9900ff; }
+.love-mood-row td { color:#ff3366; }
+.surprise-mood-row td { color:#33ccff; }
+.neutral-mood-row td { color:#aaaaaa; }
+.disgust-mood-row td { color:#33ff33; }
+
+/* Chart Container */
+.chart-container {
+  position: relative;
+  width: 100%;
+  margin-top: 20px;
+}
+
+/* Responsive */
+@media(max-width: 768px) {
+  .profile-img { width: 110px; height: 110px; }
+  .profile-title { font-size: 2rem; }
+  .profile-username { font-size: 1.3rem; }
+  .profile-email { font-size: 1rem; }
+  .btn-edit-profile { padding: 10px 25px; font-size: 0.9rem; }
+  .mood-table thead th, .mood-table tbody td { padding: 8px 12px; font-size: 0.9rem; }
+}
+</style>
+
+<!-- MOOD CHART SCRIPT -->
+<script>
+fetch('{{ url_for("user_mood_stats") }}')
+.then(res => res.json())
+.then(data => {
+    const ctx = document.getElementById('moodChart').getContext('2d');
+
+    // Gradient colors for each mood
+    const gradientColors = Object.keys(data).map((mood) => {
+        const grd = ctx.createLinearGradient(0,0,0,200);
+        const colors = {
+            "joy": ['#ffef00','#ffd600'],
+            "sadness": ['#00cfff','#0077aa'],
+            "anger": ['#ff3300','#aa0000'],
+            "fear": ['#9900ff','#6600aa'],
+            "love": ['#ff3388','#cc0055'],
+            "surprise": ['#33ccff','#0077aa'],
+            "neutral": ['#aaaaaa','#666666'],
+            "disgust": ['#33ff33','#009900']
+        };
+        grd.addColorStop(0, colors[mood][0]);
+        grd.addColorStop(1, colors[mood][1]);
+        return grd;
+    });
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(data),
+            datasets: [{
+                label: 'Mood Count',
+                data: Object.values(data),
+                backgroundColor: gradientColors,
+                borderRadius: 12,
+                borderSkipped: false
+            }]
+        },
+        options: {
+            responsive:true,
+            plugins:{legend:{display:false}},
+            scales:{
+                y:{
+                    beginAtZero:true, 
+                    ticks:{color:'#fff', font:{weight:'600', size:14}},
+                    grid:{color:'rgba(255,255,255,0.1)'}
+                },
+                x:{
+                    ticks:{color:'#fff', font:{weight:'600', size:14}},
+                    grid:{display:false}
+                }
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

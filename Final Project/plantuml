@@ -1,0 +1,58 @@
+@startuml
+title Mood Aware System - Deployment Diagram
+
+node "User Device" {
+  node "Web Browser" {
+    [HTML]
+    [CSS]
+    [JavaScript]
+  }
+}
+
+node "Application Server (Python Backend)" {
+  [Flask/Django Server]
+
+  node "Backend Modules" {
+    [Authentication Service]
+    [Emotion Controller]
+    [Recommendation Engine]
+    [Recovery Module]
+    [History Manager]
+  }
+}
+
+node "AI Processing Server (Python)" {
+  [Text Emotion Model]
+  [Face Emotion Model]
+  [Feature Extraction Engine]
+}
+
+database "MongoDB Server" {
+  node "Collections" {
+    [Users Collection]
+    [Mood History Collection]
+    [Emotion Logs]
+    [Session Data]
+  }
+}
+
+' ================= CONNECTIONS =================
+
+[Web Browser] --> [Flask/Django Server]
+
+[Flask/Django Server] --> [Authentication Service]
+[Flask/Django Server] --> [Emotion Controller]
+
+[Emotion Controller] --> [Text Emotion Model]
+[Emotion Controller] --> [Face Emotion Model]
+
+[Emotion Controller] --> [Recommendation Engine]
+[Emotion Controller] --> [Recovery Module]
+[Emotion Controller] --> [History Manager]
+
+[Authentication Service] --> MongoDB Server
+[History Manager] --> MongoDB Server
+[Recommendation Engine] --> MongoDB Server
+[Recovery Module] --> MongoDB Server
+
+@enduml

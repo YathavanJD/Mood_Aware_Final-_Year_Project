@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+{% block title %}AI Mood Music Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="ai-dashboard">
+
+
+  <!-- HERO -->
+  <div class="hero-section">
+    <h1>Welcome {{ current_user.username }} 👋</h1>
+    <p class="subtitle">🎶 Mood Detection & Smart Healing Music</p>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- TEXT -->
+    <div class="glass-card">
+      <h3>❤️‍🔥 VibeScribe</h3>
+      <form method="POST" id="textForm">
+        <textarea name="text" rows="4" placeholder="Type your feelings for Analyzing your mood... 🎭" required></textarea>
+        <button class="primary-btn">❤️ Detect Mood</button>
+      </form>
+    </div>
+
+    <!-- FACE -->
+    <div class="glass-card">
+      <h3>🎭 EmotionCam</h3>
+      <div class="camera-wrapper">
+        <video id="video" autoplay></video>
+        <div class="scan-line"></div>
+      </div>
+      <button class="secondary-btn" id="capture">📸 Scan Emotion</button>
+    </div>
+
+  </div>
+
+  <!-- RESULT -->
+  {% if result %}
+  <div class="result-card {{ result.mood }}-theme">
+
+    <div class="result-header">
+      <div class="emoji">{{ result.emoji }}</div>
+      <div>
+        <h2>{{ result.mood|capitalize }} Detected</h2>
+        <p>{{ result.quote }}</p>
+      </div>
+    </div>
+
+    <!-- CONFIDENCE -->
+    <div class="confidence">
+      <span>Confidence</span>
+      <div class="bar">
+        <div class="fill" style="width: {{ result.confidence if result.confidence else 80 }}%"></div>
+      </div>
+    </div>
+
+    <!-- RECOVERY -->
+    <h3 class="section-title">🎶 Healing Journey</h3>
+
+    <div class="recovery-grid">
+      {% for stage in result.recovery_playlist %}
+      <div class="stage-card">
+
+        <div class="stage-header">
+          <span>{{ stage.emoji }}</span>
+          <h4>{{ stage.stage|capitalize }}</h4>
+        </div>
+
+        <p>{{ stage.quote }}</p>
+
+        <div class="stage-actions">
+          {% if stage.spotify %}
+          <a href="{{ stage.spotify }}" target="_blank" class="spotify">Spotify</a>
+          {% endif %}
+
+          {% if stage.youtube %}
+          <a href="{{ stage.youtube }}" target="_blank" class="youtube">YouTube</a>
+          {% endif %}
+        </div>
+
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- ================= CSS ================= -->
+<style>
+
+/* GLOBAL */
+body {
+  background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* DASHBOARD */
+.ai-dashboard {
+  max-width: 1200px;
+  margin: auto;
+  padding: 40px 20px;
+}
+
+/* HERO */
+.hero-section {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.hero-section h1 {
+  font-size: 2.5rem;
+}
+
+/* GRID */
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+/* ================= CARDS ================= */
+.glass-card,
+.result-card,
+.stage-card {
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 25px;
+  border: 1px solid rgba(255,255,255,0.1);
+
+  /* animation base */
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 0.6s ease forwards, floatCard 6s ease-in-out infinite;
+}
+
+/* delay for stagger effect */
+.glass-card:nth-child(1) { animation-delay: 0.1s; }
+.glass-card:nth-child(2) { animation-delay: 0.2s; }
+
+/* hover */
+.glass-card:hover,
+.stage-card:hover,
+.result-card:hover {
+  transform: translateY(-10px) scale(1.03);
+  box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+}
+
+/* fade in animation */
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* floating effect */
+@keyframes floatCard {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* ================= INPUT ================= */
+textarea {
+  width: 100%;
+  padding: 15px;
+  border-radius: 12px;
+  border: none;
+  background: #111;
+  color: white;
+  margin-bottom: 15px;
+  outline: none;
+}
+
+/* ================= BUTTONS ================= */
+.primary-btn,
+.secondary-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+
+  transition: all 0.3s ease;
+}
+
+/* primary */
+.primary-btn {
+  background: linear-gradient(45deg,#ff00ff,#ff33aa);
+  color: white;
+}
+
+/* secondary */
+.secondary-btn {
+  background: #00ffcc;
+  color: black;
+}
+
+/* hover */
+.primary-btn:hover,
+.secondary-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+/* click */
+.primary-btn:active,
+.secondary-btn:active {
+  transform: scale(0.95);
+}
+
+/* glow effect */
+.primary-btn::after,
+.secondary-btn::after {
+  content: "";
+  position: absolute;
+  width: 120%;
+  height: 120%;
+  top: -10%;
+  left: -10%;
+  background: radial-gradient(circle, rgba(255,255,255,0.25), transparent 70%);
+  opacity: 0;
+  transition: 0.4s;
+}
+
+.primary-btn:hover::after,
+.secondary-btn:hover::after {
+  opacity: 1;
+}
+
+/* ================= CAMERA ================= */
+.camera-wrapper {
+  position: relative;
+}
+
+video {
+  width: 100%;
+  border-radius: 15px;
+}
+
+/* scan line */
+.scan-line {
+  position: absolute;
+  width: 100%;
+  height: 2px;
+  background: #00ffcc;
+  top: 0;
+  animation: scan 2s linear infinite;
+}
+
+@keyframes scan {
+  0% { top: 0; }
+  100% { top: 100%; }
+}
+
+/* ================= RESULT ================= */
+.result-card {
+  margin-top: 40px;
+  padding: 30px;
+  border-radius: 25px;
+  backdrop-filter: blur(25px);
+  border: 2px solid;
+}
+
+/* header */
+.result-header {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.emoji {
+  font-size: 4rem;
+}
+
+/* ================= CONFIDENCE ================= */
+.bar {
+  height: 10px;
+  background: #222;
+  border-radius: 10px;
+  margin-top: 5px;
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  background: linear-gradient(90deg,#00ffcc,#00ff88);
+}
+
+/* ================= RECOVERY ================= */
+.section-title {
+  margin-top: 25px;
+}
+
+.recovery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(200px,1fr));
+  gap: 15px;
+}
+
+.stage-card {
+  padding: 15px;
+  border-radius: 15px;
+}
+
+/* header */
+.stage-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* actions */
+.stage-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+/* links */
+.spotify {
+  background: #1db954;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+}
+
+.youtube {
+  background: red;
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: white;
+  text-decoration: none;
+}
+
+
+/* ================= THEMES ================= */
+.joy-theme { border-color: gold; }
+.sadness-theme { border-color: #2196F3; }
+.anger-theme { border-color: red; }
+.fear-theme { border-color: purple; }
+.love-theme { border-color: pink; }
+.neutral-theme { border-color: gray; }
+
+/* ================= RESPONSIVE ================= */
+@media(max-width:900px){
+  .main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+</style>
+
+<!-- ================= JS ================= -->
+<script>
+
+const video = document.getElementById("video");
+const loader = document.getElementById("loadingOverlay");
+
+// CAMERA
+navigator.mediaDevices.getUserMedia({ video:true })
+.then(stream => video.srcObject = stream);
+
+// TEXT LOADING
+document.getElementById("textForm").addEventListener("submit", () => {
+  loader.style.display = "flex";
+});
+
+// FACE (NO LOADING ANIMATION)
+document.getElementById("capture").onclick = async () => {
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 48;
+  canvas.height = 48;
+
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(video, 0, 0, 48, 48);
+
+  const res = await fetch("{{ url_for('face') }}", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ image: canvas.toDataURL() })
+  });
+
+  const r = await res.json();
+
+  if (r.ok) {
+    location.reload();
+  } else {
+    alert(r.error);
+  }
+};
+
+</script>
+
+{% endblock %}

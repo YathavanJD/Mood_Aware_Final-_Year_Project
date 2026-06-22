@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+{% block title %}Signup{% endblock %}
+
+{% block content %}
+
+<div class="edit-container signup-container">
+
+    <!-- Page Header -->
+    <h2>Signup</h2>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="flash-message alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Signup Form -->
+    <form method="POST" enctype="multipart/form-data" id="signupForm">
+
+        <input type="text" name="username" placeholder="Username" required>
+
+        <input type="email" name="email" placeholder="Email" required>
+
+        <!-- PASSWORD -->
+        <div class="password-wrapper">
+            <input type="password" id="password" name="password" placeholder="Password" required>
+            <span class="eye" onclick="togglePassword('password', this)">👁</span>
+        </div>
+
+        <!-- STRENGTH BAR -->
+        <div class="strength-wrapper">
+            <div id="strengthBar"></div>
+        </div>
+        <small id="strengthText"></small>
+
+        <!-- CONFIRM PASSWORD -->
+        <div class="password-wrapper">
+            <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm Password" required>
+            <span class="eye" onclick="togglePassword('confirm_password', this)">👁</span>
+        </div>
+
+        <small id="matchText"></small>
+
+        <!-- PROFILE IMAGE -->
+        <input type="file" name="profile_image" accept="image/*" onchange="previewImage(event)">
+        <img id="preview">
+
+        <button type="submit">📝 Get Started</button>
+
+        <p class="text-center mt-3">
+            Already have an account?
+            <a href="{{ url_for('login') }}">Login</a>
+        </p>
+
+    </form>
+</div>
+
+<style>
+
+/* SAME CONTAINER STYLE AS LOGIN */
+.signup-container {
+    max-width: 420px;
+    margin: 80px auto;
+    padding: 35px 30px;
+    background: #111;
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(59, 130, 246, 0.5);
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+}
+
+/* HEADER */
+.signup-container h2 {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 25px;
+    color: #60a5fa;
+    text-shadow: 0 0 5px #3b82f6;
+}
+
+/* INPUTS */
+.signup-container input[type="text"],
+.signup-container input[type="email"],
+.signup-container input[type="password"],
+.signup-container input[type="file"] {
+    width: 100%;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    border: 2px solid #3b82f6;
+    background: #1e293b;
+    color: #fff;
+    font-size: 1rem;
+}
+
+/* PASSWORD WRAPPER */
+.password-wrapper{
+    position:relative;
+}
+.eye{
+    position:absolute;
+    right:15px;
+    top:12px;
+    cursor:pointer;
+}
+
+/* STRENGTH BAR */
+.strength-wrapper{
+    height:6px;
+    background:#333;
+    border-radius:6px;
+    margin-top:-10px;
+    margin-bottom:6px;
+}
+#strengthBar{
+    height:100%;
+    width:0%;
+    border-radius:6px;
+    transition:.3s;
+}
+
+/* MATCH TEXT */
+.valid{color:#22c55e;}
+.invalid{color:#ef4444;}
+
+/* IMAGE PREVIEW */
+#preview{
+    width:80px;
+    height:80px;
+    border-radius:50%;
+    margin-bottom:15px;
+    display:none;
+    object-fit:cover;
+}
+
+/* BUTTON */
+.signup-container button {
+    width: 100%;
+    padding: 14px;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    color: #fff;
+    cursor: pointer;
+    margin-bottom: 15px;
+}
+
+/* FLASH */
+.flash-message {
+    background: #1e293b;
+    border: 1px solid #3b82f6;
+    border-radius: 12px;
+    color: #fff;
+    margin-bottom: 15px;
+    text-align: center;
+    padding:10px;
+}
+
+</style>
+
+<script>
+
+/* SHOW PASSWORD */
+function togglePassword(id, el){
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+    el.textContent = input.type === "password" ? "👁" : "🙈";
+}
+
+/* IMAGE PREVIEW */
+function previewImage(e){
+    const reader=new FileReader();
+    reader.onload=function(){
+        const img=document.getElementById("preview");
+        img.src=reader.result;
+        img.style.display="block";
+    }
+    reader.readAsDataURL(e.target.files[0]);
+}
+
+/* PASSWORD STRENGTH */
+const pass=document.getElementById("password");
+const bar=document.getElementById("strengthBar");
+const text=document.getElementById("strengthText");
+
+pass.addEventListener("input",()=>{
+    let v=pass.value;
+    let s=0;
+    if(v.length>=8)s++;
+    if(/[A-Z]/.test(v))s++;
+    if(/[a-z]/.test(v))s++;
+    if(/[0-9]/.test(v))s++;
+    if(/[!@#$%^&*]/.test(v))s++;
+
+    bar.style.width=(s*20)+"%";
+
+    if(s<=2){bar.style.background="red";text.textContent="Weak";}
+    else if(s<=4){bar.style.background="orange";text.textContent="Medium";}
+    else{bar.style.background="limegreen";text.textContent="Strong";}
+});
+
+/* MATCH CHECK */
+const confirm=document.getElementById("confirm_password");
+const match=document.getElementById("matchText");
+
+confirm.addEventListener("input",()=>{
+    if(pass.value===confirm.value){
+        match.textContent="Passwords match ✔";
+        match.className="valid";
+    }else{
+        match.textContent="Passwords do not match";
+        match.className="invalid";
+    }
+});
+
+/* FINAL VALIDATION */
+document.getElementById("signupForm").addEventListener("submit",e=>{
+    const v=pass.value;
+    const strong =
+        v.length>=8 &&
+        /[A-Z]/.test(v) &&
+        /[a-z]/.test(v) &&
+        /[0-9]/.test(v) &&
+        /[!@#$%^&*]/.test(v);
+
+    if(!strong){
+        alert("Password must contain 8 characters, uppercase, lowercase, number, and special character.");
+        e.preventDefault();
+    }
+    if(pass.value!==confirm.value){
+        alert("Passwords do not match.");
+        e.preventDefault();
+    }
+});
+
+</script>
+
+{% endblock %}
