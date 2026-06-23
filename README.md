@@ -187,22 +187,6 @@ Open your browser and go to: `http://localhost:5000`
 
 ---
 
-## 📸 Screenshots
-
-| Login Page | Dashboard |
-|---|---|
-| Clean, dark-themed login UI | Dual-input emotion detection interface |
-
-| Emotion Detection Output | Mood History |
-|---|---|
-| Detected mood with confidence + playlists | Bar chart of emotional patterns over time |
-
-| Admin Dashboard | |
-|---|---|
-| System Control Hub with user & emotion stats | |
-
----
-
 ## 📁 Project Structure
 
 ```
@@ -260,7 +244,7 @@ MoodAware/
 **Loganathan Yathavan**
 - 📧 loganathanyathavan@gmail.com
 - 🌐 [Portfolio](https://yathavanjd.github.io/Yathavan_Portfolio/)
-- 💼 [LinkedIn](https://www.linkedin.com/in/yathavanloganathan03)
+- 💼 [LinkedIn](https://www.linkedin.com/in/yathavanloganathan03/)
 - 🐙 [GitHub](https://github.com/YathavanJD)
 
 ---
