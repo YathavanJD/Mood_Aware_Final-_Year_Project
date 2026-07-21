@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Edit profile — Mood Aware AI{% endblock %}
+
+{% block content %}
+
+<div class="edit-page">
+  <section class="surface-card reveal in-view" style="padding:36px;">
+
+    <div class="ep-head">
+      {% if user.profile_image %}
+        <img src="{{ url_for('static', filename='uploads/' ~ user.profile_image) }}" class="avatar-img ep-avatar" alt="{{ user.username }}">
+      {% else %}
+        <div class="avatar-fallback ep-avatar">{{ user.username[0]|upper }}</div>
+      {% endif %}
+      <div>
+        <h2 style="margin-bottom:2px;">Edit profile</h2>
+        <p style="margin:0;">Update your details or refresh your photo.</p>
+      </div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" id="editForm">
+
+      <div class="field-group">
+        <label class="field-label" for="username">Username</label>
+        <input type="text" id="username" name="username" value="{{ user.username }}" required>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="email">Email</label>
+        <input type="email" id="email" name="email" value="{{ user.email }}" required>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="newpass">New password <span style="text-transform:none; opacity:.7;">(optional)</span></label>
+        <div class="field-with-icon">
+          <input type="password" id="newpass" name="password" placeholder="Leave blank to keep current password" oninput="validatePassword()">
+          <button type="button" class="field-toggle" onclick="togglePw('newpass', this)"><i class="fa-solid fa-eye"></i></button>
+        </div>
+        <small id="passError" class="hint-text invalid"></small>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label" for="profile_image">Profile photo</label>
+        <input type="file" id="profile_image" name="profile_image" accept="image/*">
+      </div>
+
+      <button type="submit" class="btn-flame btn-block">
+        <i class="fa-solid fa-floppy-disk"></i> Save changes
+      </button>
+    </form>
+  </section>
+</div>
+
+<style>
+.edit-page{ max-width: 560px; margin: 0 auto; }
+.ep-head{ display:flex; align-items:center; gap:16px; margin-bottom: 28px; }
+.ep-avatar{ width: 68px; height:68px; font-size: 1.4rem; }
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function togglePw(id, btn){
+  const input = document.getElementById(id);
+  const isPw = input.type === "password";
+  input.type = isPw ? "text" : "password";
+  btn.innerHTML = isPw ? '<i class="fa-solid fa-eye-slash"></i>' : '<i class="fa-solid fa-eye"></i>';
+}
+
+function validatePassword(){
+  const pass = document.getElementById("newpass").value;
+  const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+  const err = document.getElementById("passError");
+  if (pass && !regex.test(pass)) {
+    err.textContent = "Password must be 8+ chars with uppercase, lowercase, number & special character.";
+  } else {
+    err.textContent = "";
+  }
+}
+
+document.getElementById("editForm").addEventListener("submit", (e) => {
+  const pass = document.getElementById("newpass").value;
+  if (pass && pass.length < 6) {
+    document.getElementById("passError").textContent = "Password must be at least 6 characters.";
+    e.preventDefault();
+  }
+});
+</script>
+{% endblock %}

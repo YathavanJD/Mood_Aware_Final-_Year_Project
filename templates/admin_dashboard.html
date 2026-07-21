@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+{% block title %}Admin — Mood Aware AI{% endblock %}
+
+{% block content %}
+
+<div class="admin-page">
+
+  <section class="ap-hero reveal in-view">
+    <span class="eyebrow">Control room</span>
+    <h1>System overview</h1>
+    <p>Everything the community is feeling, in one place.</p>
+  </section>
+
+  <!-- STAT CARDS -->
+  <section class="ap-stats reveal">
+    <div class="ap-stat">
+      <span class="ap-stat-icon"><i class="fa-solid fa-users"></i></span>
+      <h5>User base</h5>
+      <h1>{{ users|length }}</h1>
+    </div>
+
+    <div class="ap-stat">
+      <span class="ap-stat-icon"><i class="fa-solid fa-wave-square"></i></span>
+      <h5>Emotion scans</h5>
+      <h1>{{ moods|length }}</h1>
+    </div>
+
+    <div class="ap-stat">
+      <span class="ap-stat-icon"><i class="fa-solid fa-face-smile"></i></span>
+      <h5>Last detected mood</h5>
+      <h1>{{ moods[0].mood|capitalize if moods else '—' }}</h1>
+    </div>
+
+    <div class="ap-stat">
+      <span class="ap-stat-icon"><i class="fa-solid fa-bolt"></i></span>
+      <h5>Scans today</h5>
+      <h1>{{ today_count or 0 }}</h1>
+    </div>
+  </section>
+
+  <!-- WEEKLY CHART -->
+  <section class="surface-card reveal ap-panel">
+    <h3 class="ap-panel-title"><i class="fa-solid fa-chart-line"></i> Weekly mood insights</h3>
+    <canvas id="weeklyChart" height="130"></canvas>
+  </section>
+
+  <!-- USER MANAGEMENT -->
+  <section class="surface-card reveal ap-panel">
+    <h3 class="ap-panel-title"><i class="fa-solid fa-user-gear"></i> User management</h3>
+
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Profile</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>
+              {% if u.profile_image %}
+                <img src="{{ url_for('static', filename='uploads/' ~ u.profile_image) }}" class="avatar-img ap-thumb" alt="{{ u.username }}">
+              {% else %}
+                <div class="avatar-fallback ap-thumb">{{ u.username[0]|upper }}</div>
+              {% endif %}
+            </td>
+            <td>{{ u.username }}</td>
+            <td>{{ u.email }}</td>
+            <td><span class="ap-role">{{ u.role|capitalize }}</span></td>
+            <td>
+              {% if u.is_banned %}
+                <span class="mood-chip mood-anger">Banned</span>
+              {% else %}
+                <span class="mood-chip mood-disgust">Active</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="ap-actions">
+                <form method="POST" action="{{ url_for('admin_toggle_ban', user_id=u._id|string) }}">
+                  <button type="submit" class="btn-ghost ap-ban-btn">
+                    {% if u.is_banned %}Unban{% else %}Ban{% endif %}
+                  </button>
+                </form>
+                <form method="POST" action="{{ url_for('admin_delete_user', user_id=u._id|string) }}" onsubmit="return confirm('Delete this user permanently?');">
+                  <button type="submit" class="btn-ghost ap-delete-btn">Delete</button>
+                </form>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<style>
+.admin-page{ max-width: 1140px; margin: 0 auto; }
+
+.ap-hero{ text-align:center; margin-bottom: 28px; }
+.ap-hero h1{ font-size: 2.1rem; margin-top:6px; }
+.ap-hero p{ margin:0; }
+
+.ap-stats{
+  display:grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 26px;
+}
+.ap-stat{
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  text-align:center;
+  transition: transform .2s ease, border-color .2s ease;
+}
+.ap-stat:hover{ transform: translateY(-3px); border-color: var(--line-strong); }
+.ap-stat-icon{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:40px; height:40px; border-radius:12px;
+  background: var(--aurora-soft); color: var(--flame-2);
+  margin-bottom: 10px; font-size: 1rem;
+}
+.ap-stat h5{ font-family: var(--font-mono); font-size: .7rem; letter-spacing:.08em; text-transform:uppercase; color: var(--text-faint); font-weight:600; margin-bottom: 4px; }
+.ap-stat h1{ font-size: 2.1rem; margin:0; }
+
+.ap-panel{ padding: 30px; margin-top: 22px; }
+.ap-panel-title{ font-size: 1.1rem; display:flex; align-items:center; gap:10px; margin-bottom: 22px; }
+.ap-panel-title i{ color: var(--flame-2); font-size:1rem; }
+
+.ap-thumb{ width: 42px; height:42px; font-size: .95rem; }
+
+.ap-role{
+  font-family: var(--font-mono);
+  font-size: .74rem;
+  letter-spacing:.05em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  background: var(--surface-2);
+  padding: 4px 10px;
+  border-radius: var(--r-pill);
+  border: 1px solid var(--line);
+}
+
+.ap-actions{ display:flex; gap:8px; justify-content:center; }
+.ap-actions form{ display:inline; }
+.ap-ban-btn:hover{ border-color: var(--mood-joy); color: var(--mood-joy); }
+.ap-delete-btn:hover{ border-color: var(--mood-anger); color: var(--mood-anger); }
+
+@media(max-width: 900px){
+  .ap-stats{ grid-template-columns: 1fr 1fr; }
+}
+@media(max-width: 560px){
+  .ap-stats{ grid-template-columns: 1fr; }
+  .ap-actions{ flex-direction:column; }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const weeklyData = {{ weekly_chart_data|tojson if weekly_chart_data else '[0,0,0,0,0,0,0]' }};
+
+new Chart(document.getElementById('weeklyChart'), {
+  type: 'line',
+  data: {
+    labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    datasets: [{
+      label: 'Mood detections',
+      data: weeklyData,
+      borderColor: '#ff6f5e',
+      backgroundColor: 'rgba(255,111,94,0.14)',
+      pointBackgroundColor: '#ff6f5e',
+      pointBorderColor: '#ff6f5e',
+      pointHoverRadius: 6,
+      pointRadius: 4,
+      tension: 0.35,
+      fill: true,
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { labels: { color: '#a79fbd', font: { weight: '600', size: 12 } } },
+      tooltip: {
+        backgroundColor: '#1b1828',
+        titleColor: '#f4f1ea',
+        bodyColor: '#f4f1ea',
+        borderColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        cornerRadius: 8,
+        displayColors: false
+      }
+    },
+    scales: {
+      y: { ticks: { color: '#a79fbd' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+      x: { ticks: { color: '#a79fbd' }, grid: { display: false } }
+    }
+  }
+});
+</script>
+{% endblock %}

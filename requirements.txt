@@ -1,0 +1,10 @@
+flask
+flask-pymongo
+flask-login
+werkzeug
+tensorflow
+opencv-python
+numpy
+scikit-learn
+pickle-mixin
+matplotlib

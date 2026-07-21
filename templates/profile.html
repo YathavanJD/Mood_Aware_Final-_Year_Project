@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Your profile — Mood Aware AI{% endblock %}
+
+{% block content %}
+
+<div class="profile-page">
+
+  <section class="pp-hero reveal in-view">
+    <span class="eyebrow">Your account</span>
+    <h1>Profile</h1>
+  </section>
+
+  <!-- PROFILE CARD -->
+  <section class="pp-card surface-card reveal">
+    <div class="pp-identity">
+      {% if user.profile_image %}
+        <img src="{{ url_for('static', filename='uploads/' ~ user.profile_image) }}" class="avatar-img pp-avatar" alt="{{ user.username }}">
+      {% else %}
+        <div class="avatar-fallback pp-avatar">{{ user.username[0]|upper }}</div>
+      {% endif %}
+
+      <div>
+        <h3 class="pp-username">{{ user.username }}</h3>
+        <p class="pp-email">{{ user.email }}</p>
+      </div>
+    </div>
+
+    <a href="{{ url_for('edit_profile') }}" class="btn-violet">
+      <i class="fa-solid fa-pen"></i> Edit profile
+    </a>
+  </section>
+
+  <!-- MOOD HISTORY -->
+  <section class="pp-card surface-card reveal" style="margin-top:22px;">
+    <h3 class="pp-section-title"><i class="fa-solid fa-clock-rotate-left"></i> Recent mood entries</h3>
+
+    {% if moods %}
+    <div class="table-responsive">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Mood</th>
+            <th>Source</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in moods[:10] %}
+          <tr>
+            <td>{{ m.created_at.strftime('%b %d, %Y · %H:%M') }}</td>
+            <td><span class="mood-chip mood-{{ m.mood }}">{{ MOODS[m.mood].emoji }} {{ m.mood|capitalize }}</span></td>
+            <td>{{ m.source|capitalize }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="pp-empty">No mood entries yet — head to <a href="{{ url_for('dashboard') }}">Detect</a> to log your first one.</p>
+    {% endif %}
+
+    <div class="pp-chart-wrap">
+      <canvas id="moodChart" height="200"></canvas>
+    </div>
+  </section>
+</div>
+
+<style>
+.profile-page{ max-width: 880px; margin: 0 auto; }
+.pp-hero{ text-align:center; margin-bottom: 26px; }
+.pp-hero h1{ font-size: 2rem; }
+
+.pp-card{ padding: 32px; display:flex; align-items:center; justify-content:space-between; gap: 20px; flex-wrap: wrap; }
+
+.pp-identity{ display:flex; align-items:center; gap: 18px; }
+.pp-avatar{ width: 84px; height: 84px; font-size: 1.7rem; }
+.pp-username{ font-size: 1.4rem; margin-bottom: 2px; }
+.pp-email{ margin: 0; font-size: .92rem; }
+
+.pp-section-title{ font-size: 1.1rem; display:flex; align-items:center; gap:10px; margin-bottom: 20px; }
+.pp-section-title i{ color: var(--flame-2); font-size: 1rem; }
+
+.pp-empty{ text-align:center; padding: 30px 0; }
+.pp-empty a{ color: var(--flame-2); font-weight:700; text-decoration:none; }
+
+.pp-chart-wrap{ margin-top: 30px; }
+
+@media(max-width: 620px){
+  .pp-card{ flex-direction:column; align-items:flex-start; }
+}
+</style>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+fetch('{{ url_for("user_mood_stats") }}')
+  .then(res => res.json())
+  .then(data => {
+    const ctx = document.getElementById('moodChart').getContext('2d');
+    const colors = {
+      joy: '#ffcc4d', sadness: '#4fa3ff', anger: '#ff5c5c', fear: '#b57bff',
+      love: '#ff5fa2', surprise: '#45e0c8', neutral: '#9aa0ad', disgust: '#7ed957'
+    };
+    const labels = Object.keys(data);
+
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Mood count',
+          data: Object.values(data),
+          backgroundColor: labels.map(m => colors[m] || '#7c5cff'),
+          borderRadius: 10,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { color: '#a79fbd' }, grid: { color: 'rgba(255,255,255,0.06)' } },
+          x: { ticks: { color: '#a79fbd' }, grid: { display: false } }
+        }
+      }
+    });
+  });
+</script>
+{% endblock %}
