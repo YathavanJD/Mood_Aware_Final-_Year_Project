@@ -21,8 +21,8 @@ warnings.filterwarnings("ignore")
 
 # ---------------- APP CONFIG ----------------
 app = Flask(__name__)
-app.secret_key = "mood_healing_ai_secret"
-app.config["MONGO_URI"] = "mongodb://localhost:27017/mood_aware"
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret")
+app.config["MONGO_URI"] = os.environ.get("MONGO_URI", "mongodb://localhost:27017/mood_aware")
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
